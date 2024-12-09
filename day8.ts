@@ -5,39 +5,23 @@ export const solve = async () => {
   const input = await file.text();
 
   const map: string[][] = input.split('\n').map(line => line.split(''));
-  // for (let lineIndex = 0; lineIndex < map.length; lineIndex += 1) {
-  //   const line = map[lineIndex]
-  //   for (let colIndex = 0; colIndex < line.length; colIndex += 1) {
-  //     const col = line[colIndex]
-  //     if (col !== '.') {
-  //       const otherOccurences = map.reduce((acc, cur, index) => {
-  //         const indexOfCol = cur.indexOf(col);
-  //         if (indexOfCol !== -1 && index !== lineIndex && indexOfCol !== colIndex) {
-  //           acc.push({
-  //             x: index,
-  //             y: indexOfCol,
-  //           });
-  //         }
-  //         return acc;
-  //       }, [] as {x: number, y: number}[]);
-  //       console.log(col, otherOccurences)
-  //     }
-  //   }
-  // }
+  let count = 0;
   const occurences = map.reduce((acc, cur, index) => {
     for (let colIndex = 0; colIndex < cur.length; colIndex += 1) {
-      const col = cur[colIndex]
+      const col = cur[colIndex];
       if (col !== '.') {
         if (acc[col]) {
           acc[col].push({
             x: index,
-            y: colIndex
-          })
+            y: colIndex,
+          });
         } else {
-          acc[col] = [{
-            x: index,
-            y: colIndex
-          } ]
+          acc[col] = [
+            {
+              x: index,
+              y: colIndex,
+            },
+          ];
         }
       }
     }
@@ -45,11 +29,24 @@ export const solve = async () => {
   }, {} as Record<number, { x: number; y: number }[]>);
   Object.entries(occurences).forEach(([key, positions]) => {
     positions.forEach(position => {
-      const otherPositions = positions.filter(el => el !== position)
-      
-    })
-  })
+      const otherPositions = positions.filter(el => el !== position);
+      otherPositions.forEach(otherPosition => {
+        const initialXDiff = position.x - otherPosition.x;
+        const initialYDiff = position.y - otherPosition.y;
+        let xDiff = position.x - otherPosition.x;
+        let yDiff = position.y - otherPosition.y;
+        while (map[position.x + xDiff]?.[position.y + yDiff]) {
+          map[position.x + xDiff][position.y + yDiff] = '#';
+          xDiff += initialXDiff;
+          yDiff += initialYDiff;
+          count += 1;
+        }
+      });
+    });
+  });
+  console.log(
+    map.reduce((acc, cur) => (acc += cur.filter(el => el !== '.').length), 0)
+  );
 };
 
-const solutions = await solve();
-console.log(solutions);
+await solve();
